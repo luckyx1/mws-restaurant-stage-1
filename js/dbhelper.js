@@ -1,7 +1,24 @@
 /**
  * Common database helper functions.
  */
+
+/***
+* Register the service worker
+*/
+  if(navigator.serviceWorker){
+    navigator.serviceWorker
+      .register('/sw2.js')
+      .then(function(){
+        console.log("Registration worked!");
+      }).catch(function(err){
+        console.log("Registration failed~", err);
+      });
+  }else{
+    console.log("navigator has no serviceWorker");
+  }
+
 class DBHelper {
+
 
   /**
    * Database URL.
