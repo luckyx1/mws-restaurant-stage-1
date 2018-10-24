@@ -26,4 +26,26 @@ class IdB {
 		return tx.complete;
 	}
 
+	static hasRestaraunts(db){
+		return IdB.IDB_PROMISE
+		  .then( db => IdB.countRestaurants(db))
+	}
+
+	static countRestaurants(db){
+		let tx = db.transaction(IdB.OBJECT_STORE);
+		let keyValStore = tx.objectStore(IdB.OBJECT_STORE);
+		return keyValStore.count();
+	}
+
+	static getRestaurants(){
+		return IdB.IDB_PROMISE
+		  .then( db => IdB.getAllRestaurant(db))
+	}
+
+	static getAllRestaurant(db){
+		let tx = db.transaction(IdB.OBJECT_STORE);
+		let keyValStore = tx.objectStore(IdB.OBJECT_STORE);
+		return keyValStore.getAll();
+	}
+
 }

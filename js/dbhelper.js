@@ -33,20 +33,6 @@ class DBHelper {
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
-    // let xhr = new XMLHttpRequest();
-    // xhr.open('GET', DBHelper.DATABASE_URL);
-    // xhr.onload = () => {
-    //   if (xhr.status === 200) { // Got a success response from server!
-    //     console.log("data returned from Server");
-    //     const json = JSON.parse(xhr.responseText);
-    //     const restaurants = json.restaurants;
-    //     callback(null, restaurants);
-    //   } else { // Oops!. Got an error from server.
-    //     const error = (`Request failed. Returned status of ${xhr.status}`);
-    //     callback(error, null);
-    //   }
-    // };
-    // xhr.send();
     fetch(DBHelper.DATABASE_URL)
       .then(response => response.json())
       .then(data => DBHelper.handleFetchData(data, callback))
@@ -60,8 +46,19 @@ class DBHelper {
   }
 
   static handleFetchError(error, callback){
-    console.log("fetch error recieved ", error)
-    callback(`Request failed. Returned status of ${error}`, null);
+    console.log("no data from fetch, try Idb");
+    IdB.hasRestaraunts()
+      .then((count) =>{
+        if(count === 0){
+          callback(`Request failed. Returned status of ${error}`, null);
+        }else{
+          console.log("data is bigger than 0", count);
+          IdB.getRestaurants().
+            then((restaurants)=>{
+              callback(null, restaurants);
+            })
+        }
+      });
   }
 
   /**
