@@ -24,23 +24,23 @@ var CACHED_URL = [
 ];
 
 self.addEventListener('install', function(event){
-	console.log("installed sw")
+	console.log("installed SW");
 	event.waitUntil(
 		caches.open(staticCacheName).then(function(cache){
-			console.log("cached page");
+			console.log("Cached pages");
 			return cache.addAll(CACHED_URL);
 		})
 	)
 });
 
 self.addEventListener('activate', function(event){
-	console.log("activated")
+	console.log("activated SW");
 	event.waitUntil(
 		caches.keys().then(function(cacheNames) {
 			return Promise.all(
 				cacheNames.map(function(cacheName){
 					if(cacheName !== staticCacheName){
-						console.log("removing old cache", cacheName);
+						console.log("Removing old cache", cacheName);
 						return caches.delete(cacheName);
 					}
 				})
@@ -50,27 +50,14 @@ self.addEventListener('activate', function(event){
 })
 
 self.addEventListener('fetch', function(event){
-	// event.respondWith(
-	// 	fetch(event.request).then(function(response){
-	// 		console.log("in condition", response.status);
-	// 		if(response.status === 404){
-	// 			return fetch('/img/1.jpg');
-	// 		}
-	// 		return response;
-	// 	}).catch(function(){
-	// 		return new Response("Uh oh, that failed");
-	// 	})
-	// );
 	event.respondWith(
 		caches.match(event.request).then(function(response){
 			if (response){
-				console.log('found request in cache', response)
+				console.log('Found request in cache');
 				return response;
 			}else if(event.request.url.includes("restaurant.html")){
-				console.log('matches generic restaurant')
 				return caches.match('/restaurant.html');
 			}
-			console.log('fetch original', event.request);
 			return fetch(event.request);
 		})
 	)

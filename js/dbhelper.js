@@ -30,6 +30,20 @@ class DBHelper {
   }
 
   /**
+   * Review URL.
+   * Change this to restaurants.json file location on your server.
+   */
+  static REVIEW_URL(id) {
+    const port = 1337 // Change this to your server port
+    return `http://localhost:${port}/reviews/?restaurant_id=${id}`;
+  }
+
+  static get REVIEW_POST(){
+    const port = 1337;
+    return `http://localhost:${port}/reviews/`
+  }
+
+  /**
    * Fetch all restaurants.
    */
   static fetchRestaurants(callback) {
@@ -46,13 +60,13 @@ class DBHelper {
   }
 
   static handleFetchError(error, callback){
-    console.log("no data from fetch, try Idb");
+    console.log("no restaurant data from fetch, try Idb");
     IdB.hasRestaraunts()
       .then((count) =>{
         if(count === 0){
-          callback(`Request failed. Returned status of ${error}`, null);
+          callback(`Request restaurant data failed. Returned status of ${error}`, null);
         }else{
-          console.log("data is bigger than 0", count);
+          console.log("restaurant available in cache", count);
           IdB.getRestaurants().
             then((restaurants)=>{
               callback(null, restaurants);
@@ -60,6 +74,41 @@ class DBHelper {
         }
       });
   }
+
+  /*
+    Fetch all review for specific restaurant id
+  */
+  static fetchReviewstById(id, callback){
+    fetch(DBHelper.REVIEW_URL(id))
+      .then(response => response.json())
+      .then(data => DBHelper.handleFetchReviewData(data, callback))
+      .catch(e => DBHelper.handleFetchReviewError(e, id, callback))
+  }
+
+  static handleFetchReviewData(reviews, callback){
+    // console.log("fetched reviews now store", reviews);
+    IdB.storeReview(reviews);
+    callback(null, reviews);
+  }
+
+  static handleFetchReviewError(error, id, callback){
+    console.log("failed to get review from server, try Idb");
+    IdB.hasReviews(id)
+      .then((count) => {
+        if(count === 0){
+          callback(`Request review data failed. Returned status of ${error}`, null);
+        }else{
+          console.log("review available in cache", count);
+          IdB.getReviews(id).
+            then((reviews)=> {
+              callback(null, reviews);
+            })
+        }
+      })
+  
+  }
+
+
 
   /**
    * Fetch a restaurant by its ID.
