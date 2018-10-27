@@ -145,7 +145,8 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
   reviewForm.id = "review-form"
 
   const inputLabel = document.createElement('label');
-  inputLabel.innerHTML = 'Author:'
+  inputLabel.innerHTML = 'Author:';
+  inputLabel.setAttribute("for", "review-author");
   reviewForm.appendChild(inputLabel);
 
   const inputText = document.createElement('input');
@@ -155,10 +156,13 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
 
   const ratingLabel = document.createElement('label');
   ratingLabel.innerHTML = "Rating:";
+  ratingLabel.setAttribute("for", "review-select");
   reviewForm.appendChild(ratingLabel);
 
   const ratingSelect = document.createElement('select');
   ratingSelect.id ="review-select";
+  ratingSelect.name = "Rating";
+  ratingSelect.setAttribute("aria-label", "Rating select");
   const rating = [1,2,3,4,5];
   rating.forEach( val => {
     let option = document.createElement('option');
@@ -170,6 +174,7 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
 
   const textLabel = document.createElement('label');
   textLabel.innerHTML = "Comments:"
+  textLabel.setAttribute("for", "review-text");
   reviewForm.appendChild(textLabel);
 
   const textInput = document.createElement('textarea');
@@ -202,7 +207,6 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     return;
   }else{
     const ul = document.getElementById('reviews-list');
-    console.log("Review is ", reviews);
     reviews.forEach(review => {
       ul.appendChild(createReviewHTML(review));
     });
@@ -214,10 +218,10 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
 /**
  * Create review HTML and add it to the webpage.
  */
-createReviewHTML = (review) => {
+createReviewHTML = (review,offline=false) => {
   const li = document.createElement('li');
+
   const name = document.createElement('p');
-  console.log("review name", review.name);
   name.innerHTML = review.name;
   li.appendChild(name);
 
@@ -236,6 +240,13 @@ createReviewHTML = (review) => {
   const comments = document.createElement('p');
   comments.innerHTML = review.comments;
   li.appendChild(comments);
+
+  if(offline && !navigator.onLine){
+    const offline_status = document.createElement('p');
+    offline_status.classList.add('offline');
+    offline_status.innerHTML = "OFFLINE";
+    li.append(offline_status);
+  }
 
   return li;
 }
@@ -256,27 +267,12 @@ addReview = () => {
     createdAt: new Date()
   }
 
-  const url = DBHelper.REVIEW_POST;
-  const POST = {
-    method: 'POST',
-    body: JSON.stringify(reviewData)
-  };
+  DBHelper.postReview(reviewData)
+  const reviewList = document.getElementById('reviews-list');
+  const review = createReviewHTML(reviewData, true);
+  reviewList.appendChild(review);
+  document.getElementById('review-form').reset();
 
-  return fetch(url, POST)
-    .then(response => {
-      return response.json();
-    })
-    .then(networkReview => {
-      console.log("server updated with post, add to list");
-      const reviewList = document.getElementById('reviews-list');
-      const review = createReviewHTML(networkReview);
-      reviewList.appendChild(review);
-      document.getElementById('review-form').reset();
-    })
-    .catch(e =>{
-      console.log("Failed to post, save for later");
-      document.getElementById('review-form').reset();
-    })
 
 }
 
