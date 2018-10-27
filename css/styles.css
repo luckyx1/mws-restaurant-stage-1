@@ -217,7 +217,12 @@ nav h1 a {
   text-align: center;
   text-decoration: none;
   text-transform: uppercase;
+}
 
+#restaurants-list .like{
+  color: red;
+  background-color: pink;
+  border: inset;
 }
 
 /* ====================== Restaurant Details ====================== */

@@ -178,15 +178,42 @@ createRestaurantHTML = (restaurant) => {
   address.innerHTML = restaurant.address;
   li.append(address);
 
+  const span = document.createElement('span');
+
   const more = document.createElement('a');
   more.setAttribute("aria-label", "View detail of restaurant " + restaurant.name)
   more.innerHTML = 'View Details';
   more.href = DBHelper.urlForRestaurant(restaurant);
-  li.append(more)
+  span.append(more);
+
+  const favorite = document.createElement('button');
+  favorite.classList.add("fav-btn");
+  favorite.innerHTML = '♥';
+  changeFavUI(favorite, restaurant.is_favorite);
+  favorite.addEventListener("click", () => {clickLike(restaurant, favorite)}, false);
+  span.append(favorite);
+
+  li.append(span);
 
   return li
 }
 
+clickLike = (restaurant, elm) => {
+  const fav_status = !restaurant.is_favorite;
+  DBHelper.updateFavStatus(restaurant.id, fav_status);
+  restaurant.is_favorite = fav_status;
+  changeFavUI(elm, fav_status);
+};
+
+changeFavUI = (elm, status) => {
+  if(status){
+    elm.classList.add('like');
+    elm.setAttribute('aria-label', 'remove as favorite');
+  }else{
+    elm.classList.remove('like');
+    elm.setAttribute('aria-label','mark as favorite');
+  }
+}
 /**
  * Add markers for current restaurants to the map.
  */

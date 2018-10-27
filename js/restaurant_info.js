@@ -263,7 +263,7 @@ addReview = () => {
     name: name,
     rating: parseInt(rating),
     comments: comments.substring(0, 300),
-    restaraunt_id: parseInt(restarauntId),
+    restaurant_id: parseInt(restarauntId),
     createdAt: new Date()
   }
 
