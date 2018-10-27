@@ -38,6 +38,11 @@ class DBHelper {
     return `http://localhost:${port}/reviews/?restaurant_id=${id}`;
   }
 
+  static REVIEW_FAVORITE(id, status){
+    const port = 1337
+    return `http://localhost:${port}/restaurants/${id}/?is_favorite=${status}`
+  }
+
   static get REVIEW_POST(){
     const port = 1337;
     return `http://localhost:${port}/reviews/`
@@ -117,8 +122,9 @@ class DBHelper {
       .then(response => {
         return response.json();
       })
-      .then(() => {
-        console.log("Server has review, generate html now");
+      .then((networkReview) => {
+        console.log("Server has review, this in network", networkReview);
+        IdB.storeReview([networkReview]);
       })
       .catch(e =>{
         console.log("Failed to post, save for later");
@@ -143,6 +149,22 @@ class DBHelper {
     })
   }
 
+  static updateFavStatus(id, status){
+    const PUT = {
+      method: 'PUT',
+    };
+    return fetch(DBHelper.REVIEW_FAVORITE(id,status), PUT)
+      .then(response =>{
+        return response.json();
+      })
+      .then((networkRestaurant) =>{
+        Idb.storeRestaurants([networkRestaurant]);
+        console.log("succesfully updated restaurant status");
+      })
+      .catch(e => {
+        console.log("error trying to update like");
+      })
+  }
 
 
   /**
