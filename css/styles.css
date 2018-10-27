@@ -351,6 +351,7 @@ nav h1 a {
   padding: 0;
 }
 
+
 #reviews-list li {
   z-index: 1;
   background-color: #fff;
@@ -380,6 +381,15 @@ nav h1 a {
 #reviews-list li p {
   margin: 0 0 10px;
 }
+#reviews-list .offline {
+  width: 50%;
+  margin: 0 auto;
+  background-color: red;
+  color: white;
+  border-radius: 20px;
+  font-size: xx-large;
+}
+
 #reviews-list li p:nth-child(-n+2) {
   display: inline-block;
   padding-top: 10px;

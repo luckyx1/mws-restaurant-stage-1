@@ -108,6 +108,41 @@ class DBHelper {
   
   }
 
+  static postReview(data){
+    const POST = {
+      method: 'POST',
+      body: JSON.stringify(data)
+    };
+    return fetch(DBHelper.REVIEW_POST, POST)
+      .then(response => {
+        return response.json();
+      })
+      .then(() => {
+        console.log("Server has review, generate html now");
+      })
+      .catch(e =>{
+        console.log("Failed to post, save for later");
+        DBHelper.postReviewOffline(data)
+      })
+  }
+
+  static postReviewOffline(data){
+    let key = Date.now();
+    localStorage.setItem(key, JSON.stringify(data));
+    window.addEventListener('online', (event) => {
+      console.log("Browser is online again!");
+      let review = JSON.parse(localStorage.getItem(key));
+      if(data){
+        console.log("posting b/c online now");
+        let offlineClass = [document.getElementsByClassName("offline")];
+        offlineClass.map((elm) => { elm[0].remove()});
+        DBHelper.postReview(data);
+      }
+      localStorage.removeItem(key);
+      console.log("cleared elm from localStorage");
+    })
+  }
+
 
 
   /**
