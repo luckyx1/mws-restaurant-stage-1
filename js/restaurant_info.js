@@ -98,8 +98,22 @@ fillRestaurantHTML = (restaurant = self.restaurant) => {
   if (restaurant.operating_hours) {
     fillRestaurantHoursHTML();
   }
-  // fill reviews
-  fillReviewsHTML();
+
+  if(!self.restaurant.reviews){
+    DBHelper.fetchReviewstById(restaurant.id, (errors, reviews)=> {
+      if(errors){
+        console.log("Issues getting reviews...sorry");
+      }else{
+        self.restaurant.reviews = reviews;
+        // fill reviews
+        fillReviewsHTML();
+      }
+    })
+  }else{
+    // fill reviews
+    fillReviewsHTML();
+  }
+
 }
 
 /**
@@ -126,7 +140,57 @@ fillRestaurantHoursHTML = (operatingHours = self.restaurant.operating_hours) => 
  * Create all reviews HTML and add them to the webpage.
  */
 fillReviewsHTML = (reviews = self.restaurant.reviews) => {
+  //Add Form before displaying list
+  const reviewForm = document.createElement('form');
+  reviewForm.id = "review-form"
+
+  const inputLabel = document.createElement('label');
+  inputLabel.innerHTML = 'Author:'
+  reviewForm.appendChild(inputLabel);
+
+  const inputText = document.createElement('input');
+  inputText.type = "text";
+  inputText.id = "review-author"
+  reviewForm.appendChild(inputText);
+
+  const ratingLabel = document.createElement('label');
+  ratingLabel.innerHTML = "Rating:";
+  reviewForm.appendChild(ratingLabel);
+
+  const ratingSelect = document.createElement('select');
+  ratingSelect.id ="review-select";
+  const rating = [1,2,3,4,5];
+  rating.forEach( val => {
+    let option = document.createElement('option');
+    option.value = val;
+    option.text = val;
+    ratingSelect.appendChild(option);
+  })
+  reviewForm.appendChild(ratingSelect);
+
+  const textLabel = document.createElement('label');
+  textLabel.innerHTML = "Comments:"
+  reviewForm.appendChild(textLabel);
+
+  const textInput = document.createElement('textarea');
+  textInput.id = "review-text"
+  reviewForm.appendChild(textInput);
+
+  const submitBtn = document.createElement('button');
+  submitBtn.type = "submit";
+  submitBtn.id = "review-submit"
+  submitBtn.innerHTML = "Add this Review";
+  submitBtn.addEventListener("click", addReview, false);
+  reviewForm.appendChild(submitBtn);
+
   const container = document.getElementById('reviews-container');
+
+  const reviewTitle = document.createElement('h3');
+  reviewTitle.innerHTML = "Add Review";
+  container.appendChild(reviewTitle);
+
+  container.appendChild(reviewForm);
+
   const title = document.createElement('h3');
   title.innerHTML = 'Reviews';
   container.appendChild(title);
@@ -136,12 +200,15 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
     noReviews.innerHTML = 'No reviews yet!';
     container.appendChild(noReviews);
     return;
+  }else{
+    const ul = document.getElementById('reviews-list');
+    console.log("Review is ", reviews);
+    reviews.forEach(review => {
+      ul.appendChild(createReviewHTML(review));
+    });
+    container.appendChild(ul);
   }
-  const ul = document.getElementById('reviews-list');
-  reviews.forEach(review => {
-    ul.appendChild(createReviewHTML(review));
-  });
-  container.appendChild(ul);
+
 }
 
 /**
@@ -150,11 +217,16 @@ fillReviewsHTML = (reviews = self.restaurant.reviews) => {
 createReviewHTML = (review) => {
   const li = document.createElement('li');
   const name = document.createElement('p');
+  console.log("review name", review.name);
   name.innerHTML = review.name;
   li.appendChild(name);
 
   const date = document.createElement('p');
-  date.innerHTML = review.date;
+  if(review.date){
+    date.innerHTML = review.date;
+  }else{
+    date.innerHTML = `Date: ${new Date(review.createdAt).toLocaleString()}`;
+  }
   li.appendChild(date);
 
   const rating = document.createElement('p');
@@ -166,6 +238,46 @@ createReviewHTML = (review) => {
   li.appendChild(comments);
 
   return li;
+}
+
+
+addReview = () => {
+  event.preventDefault();
+  let restarauntId = getParameterByName('id');
+  let name = document.getElementById('review-author').value;
+  let comments = document.getElementById('review-text').value;
+  let rating = document.querySelector('#review-select option:checked').value
+
+  const reviewData = {
+    name: name,
+    rating: parseInt(rating),
+    comments: comments.substring(0, 300),
+    restaraunt_id: parseInt(restarauntId),
+    createdAt: new Date()
+  }
+
+  const url = DBHelper.REVIEW_POST;
+  const POST = {
+    method: 'POST',
+    body: JSON.stringify(reviewData)
+  };
+
+  return fetch(url, POST)
+    .then(response => {
+      return response.json();
+    })
+    .then(networkReview => {
+      console.log("server updated with post, add to list");
+      const reviewList = document.getElementById('reviews-list');
+      const review = createReviewHTML(networkReview);
+      reviewList.appendChild(review);
+      document.getElementById('review-form').reset();
+    })
+    .catch(e =>{
+      console.log("Failed to post, save for later");
+      document.getElementById('review-form').reset();
+    })
+
 }
 
 /**
